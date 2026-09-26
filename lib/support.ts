@@ -9,6 +9,9 @@ export const SUPPORT_PHOTOS_LINE =
 
 export const SUPPORT_REVIEW_LINE = "Please prepare the refund review.";
 
+/** Vendor-phone Case bot on x.ai — coordinates Record, Buyer, and Photo handoffs. */
+export const GROK_CASE_BOT_URL = "https://x.ai/bot/CQ1e1jB0k-2CFpwEEri53";
+
 export function openingSupportMessage(): string {
   return "This is Grok support for clients and refunds. Send the order number and what arrived differently from the listing. I prepare the review. A person decides any refund.";
 }
