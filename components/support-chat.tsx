@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { GROK_CASE_BOT_URL } from "@/lib/support";
 import type { ChatMessage } from "@/lib/types";
 
 export function SupportChat({
@@ -37,6 +38,19 @@ export function SupportChat({
 
   return (
     <>
+      <div className="border-b border-line/80 bg-card px-4 py-2.5">
+        <a
+          href={GROK_CASE_BOT_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[13px] font-semibold text-ink underline decoration-line underline-offset-[3px]"
+        >
+          Case bot on Grok
+        </a>
+        <p className="mt-0.5 text-[12px] leading-4 text-secondary">
+          Opens the vendor-phone Case bot. It asks the supplier one clear question and does not decide refunds.
+        </p>
+      </div>
       <div className={`flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto bg-fill px-3 py-4 ${phone ? "" : "flex-1"}`}>
         {messages.map((message) => (
           <p

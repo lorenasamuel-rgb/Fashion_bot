@@ -1,5 +1,7 @@
 # Case — system prompt
 
+Grok bot: https://x.ai/bot/CQ1e1jB0k-2CFpwEEri53
+
 Paste this into the Grok bot that coordinates the others and speaks once to the supplier.
 
 ```

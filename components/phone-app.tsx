@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { RegistrationPhone } from "@/components/registration-phone";
 import { reviseRecord } from "@/lib/agent";
+import { GROK_CASE_BOT_URL } from "@/lib/support";
 import type { ChatMessage } from "@/lib/types";
 import { useWorkspace } from "@/lib/use-workspace";
 
@@ -264,6 +265,16 @@ export function PhoneApp() {
           <p className="text-[13px] text-secondary">
             {openComplaint ? openComplaint.subject : "Client emails. The bot answers each complaint."}
           </p>
+          {!openComplaint ? (
+            <a
+              href={GROK_CASE_BOT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-block text-[13px] font-semibold text-ink underline decoration-line underline-offset-[3px]"
+            >
+              Case bot on Grok
+            </a>
+          ) : null}
         </header>
         {openComplaint ? (
           <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto bg-fill px-3 py-4">
