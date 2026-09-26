@@ -32,7 +32,7 @@ Production session cookies are `Secure` and `HttpOnly`. The supplier route allow
 
 # Product : https://fashion-bot-ruddy.vercel.app/phone
 
-Demo: 
+*Demo*: https://youtube.com/shorts/F2QhrB2J-JE?is=2h0qRCPhkVSTIVpG
 
 <!-- impeccable:product-schema 1 -->
 
