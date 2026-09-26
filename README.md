@@ -2,6 +2,19 @@
 
 A supplier finishes a wholesale lot in conversation. The same confirmed record is what the buyer reads, and what a reviewer uses if the delivery does not match.
 
+## Guided demo
+
+Open [`/demo`](https://fashion-bot-ruddy.vercel.app/demo) for a self-playing walkthrough of the whole path in under two minutes: the supplier describes the lot, a conflicting count is resolved, the record is confirmed, the buyer orders, the client reports a mismatch, and the reviewer receives one draft with the confirmed listing attached.
+
+![Guided demo](pitch/prints/17-guided-demo.png)
+
+- It runs on the rule engine in the browser, so it needs no Supabase, Grok, or account, and it plays the same way every time.
+- Space plays or pauses, ← and → step through beats, the chapter pills jump, and the speed button cycles 1×, 1.5×, 2×.
+- Add `?autoplay` (`/demo?autoplay`) to skip the start card, for a kiosk screen or a screen recording.
+- A recording of one full run is in [`pitch/FleekFlow-guided-demo.webm`](pitch/FleekFlow-guided-demo.webm).
+
+The script lives in `lib/demo-script.ts`. Each beat is a caption plus a supplier or client line, replayed through the same `applyVendorMessage`, `confirmRecord`, and `applySupportMessage` functions the live desk uses.
+
 ## Run locally
 
 Node.js 20.9 or newer.

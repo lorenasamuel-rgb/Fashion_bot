@@ -84,6 +84,9 @@ export function DemoApp() {
               <a href="/buy" className="text-secondary">
                 Buyer page
               </a>
+              <a href="/demo" className="text-secondary">
+                Tour
+              </a>
               <button type="button" onClick={reset} className="text-secondary">
                 Reset
               </button>
