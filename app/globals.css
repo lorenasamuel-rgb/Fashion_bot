@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+:root {
+  --canvas: #f2f2f7;
+  --card: #ffffff;
+  --ink: #1d1d1f;
+  --secondary: #6e6e73;
+  --line: #d2d2d7;
+  --fill: #f4f5f7;
+  --fleek: #f8c040;
+  --fleek-press: #e0aa2e;
+  --fleek-green: #178a56;
+  --fleek-green-tint: #e7f6ee;
+  --disabled: #e8e8ed;
+  --shadow: 0 22px 50px rgba(29, 29, 31, 0.16);
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-secondary: var(--secondary);
+  --color-line: var(--line);
+  --color-fill: var(--fill);
+  --color-fleek: var(--fleek);
+  --color-fleek-press: var(--fleek-press);
+  --color-fleek-green: var(--fleek-green);
+  --color-fleek-green-tint: var(--fleek-green-tint);
+  --color-disabled: var(--disabled);
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+textarea,
+input {
+  font: inherit;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--fleek);
+  outline-offset: 2px;
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0.72;
+    transform: translateX(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.sheet-in {
+  animation: sheet-in 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}

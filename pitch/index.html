@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FleekFlow — pitch</title>
+  <style>
+    :root {
+      --yellow: #F8C040;
+      --yellow-press: #E0AA2E;
+      --green: #178A56;
+      --green-tint: #E7F6EE;
+      --ink: #1D1D1F;
+      --secondary: #6E6E73;
+      --canvas: #F2F2F7;
+      --card: #FFFFFF;
+      --line: #D2D2D7;
+      --fill: #F4F5F7;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
+      background: #1D1D1F;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+
+    .deck {
+      height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+    }
+
+    .slide {
+      display: none;
+      width: min(1180px, 100%);
+      height: min(720px, calc(100vh - 56px));
+      background: var(--canvas);
+      border-radius: 28px;
+      padding: 64px 72px 88px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+    }
+    .slide.active { display: flex; flex-direction: column; }
+
+    .kicker {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--secondary);
+      margin: 0 0 18px;
+    }
+    h1 {
+      font-size: 64px;
+      line-height: 1.02;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      margin: 0;
+      max-width: 16ch;
+    }
+    h2 {
+      font-size: 48px;
+      line-height: 1.08;
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      margin: 0 0 28px;
+      max-width: 18ch;
+    }
+    .lede {
+      font-size: 24px;
+      line-height: 1.35;
+      color: var(--secondary);
+      max-width: 34ch;
+      margin: 22px 0 0;
+      font-weight: 400;
+    }
+    .mark {
+      display: inline-block;
+      align-self: flex-start;
+      background: var(--yellow);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 15px;
+      font-weight: 650;
+      letter-spacing: -0.01em;
+      margin-bottom: 22px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: auto;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 18px;
+      padding: 22px 20px;
+      border: 1px solid var(--line);
+      min-height: 180px;
+    }
+    .card strong {
+      display: block;
+      font-size: 22px;
+      margin-bottom: 8px;
+      letter-spacing: -0.03em;
+    }
+    .card p {
+      margin: 0;
+      color: var(--secondary);
+      font-size: 16px;
+      line-height: 1.35;
+    }
+
+    .roles {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr;
+      gap: 16px;
+      margin-top: 12px;
+    }
+    .role {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 28px 24px;
+      border: 1px solid var(--line);
+      min-height: 280px;
+    }
+    .role .who {
+      font-size: 13px;
+      font-weight: 650;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 12px;
+    }
+    .role h3 {
+      margin: 0 0 12px;
+      font-size: 28px;
+      letter-spacing: -0.03em;
+    }
+    .role p {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.4;
+      color: var(--secondary);
+    }
+    .role.lead {
+      background: var(--ink);
+      color: white;
+      border-color: var(--ink);
+    }
+    .role.lead p { color: #C7C7CC; }
+    .role.lead .who { color: var(--yellow); }
+
+    .beats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 28px;
+      margin-top: 8px;
+    }
+    .beat {
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 14px 0;
+      border-top: 1px solid var(--line);
+    }
+    .n {
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      background: var(--yellow);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 15px;
+    }
+    .beat strong { display: block; font-size: 18px; letter-spacing: -0.02em; }
+    .beat span { color: var(--secondary); font-size: 15px; line-height: 1.35; }
+
+    .quote {
+      font-size: 46px;
+      line-height: 1.2;
+      font-weight: 650;
+      letter-spacing: -0.035em;
+      max-width: 20em;
+      margin: 18px 0 0;
+    }
+    .quote em {
+      font-style: normal;
+      background: linear-gradient(transparent 62%, var(--yellow) 62%);
+    }
+
+    .rules {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 8px;
+    }
+    .rule {
+      background: var(--card);
+      border-radius: 18px;
+      padding: 22px 22px 20px;
+      border: 1px solid var(--line);
+    }
+    .rule b { display: block; font-size: 20px; margin-bottom: 6px; letter-spacing: -0.02em; }
+    .rule span { color: var(--secondary); font-size: 16px; line-height: 1.4; }
+
+    .close-row {
+      display: flex;
+      gap: 12px;
+      margin-top: auto;
+      align-items: center;
+    }
+    .pill {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .pill.on { background: var(--green-tint); border-color: transparent; }
+
+    footer.bar {
+      position: absolute;
+      left: 72px;
+      right: 72px;
+      bottom: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--secondary);
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .dots { display: flex; gap: 6px; }
+    .dots i {
+      width: 8px;
+      height: 8px;
+      border-radius: 99px;
+      background: #C7C7CC;
+      display: block;
+    }
+    .dots i.on { background: var(--yellow); width: 22px; }
+
+    .notes {
+      display: none;
+      position: fixed;
+      left: 28px;
+      right: 28px;
+      bottom: 18px;
+      background: #111;
+      color: #F5F5F7;
+      border-radius: 16px;
+      padding: 16px 20px;
+      font-size: 15px;
+      line-height: 1.45;
+      letter-spacing: -0.01em;
+      max-width: 920px;
+      margin: 0 auto;
+      z-index: 5;
+    }
+    body.show-notes .notes { display: block; }
+    body.show-notes .deck { padding-bottom: 120px; }
+    .notes b { color: var(--yellow); font-weight: 650; }
+
+    .help {
+      position: fixed;
+      top: 16px;
+      right: 20px;
+      color: #8E8E93;
+      font-size: 12px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="help">← → to move · N for speaker notes</div>
+  <div class="deck" id="deck"></div>
+  <div class="notes" id="notes"></div>
+
+  <script>
+    const slides = [
+      {
+        html: `
+          <span class="mark">Fleek · Merchant tooling</span>
+          <h1>Finish the lot before anyone buys it.</h1>
+          <p class="lede">FleekFlow. The wholesale record is written in conversation, confirmed by the supplier, and kept for the buyer and for any later mismatch.</p>
+        `,
+        note: "Open on the outcome, then name the product. Pause after the first line. About 15 seconds."
+      },
+      {
+        html: `
+          <p class="kicker">The decision</p>
+          <h2>A reseller chooses a lot from an incomplete record.</h2>
+          <div class="grid">
+            <div class="card"><strong>Quantity</strong><p>The listing can say 20. The count can be 18.</p></div>
+            <div class="card"><strong>Sizes</strong><p>The mix is often missing until someone asks.</p></div>
+            <div class="card"><strong>Defects</strong><p>Stains show up in the box, after the purchase.</p></div>
+            <div class="card"><strong>Shipping & duties</strong><p>Cost is assumed when it was never stated.</p></div>
+          </div>
+        `,
+        note: "Name the four gaps. Do not claim FleekFlow fixes photographing, sourcing, or returns as market shares. The point is one incomplete record."
+      },
+      {
+        html: `
+          <p class="kicker">After delivery</p>
+          <h2>The mismatch starts the story again.</h2>
+          <div class="roles">
+            <article class="role lead">
+              <div class="who">What is missing</div>
+              <h3>The version that was confirmed.</h3>
+              <p>The buyer repeats what arrived. The reviewer does not have the listing the supplier stood behind before the purchase.</p>
+            </article>
+            <article class="role">
+              <div class="who">Buyer</div>
+              <h3>Retells the lot.</h3>
+              <p>Order, difference, and photos are gathered from scratch.</p>
+            </article>
+            <article class="role">
+              <div class="who">Reviewer</div>
+              <h3>Decides from memory.</h3>
+              <p>There is no single document that shows what was known, and what was still unknown.</p>
+            </article>
+          </div>
+        `,
+        note: "This is the second half of the problem. The pain is repetition, and a case with no confirmed baseline."
+      },
+      {
+        html: `
+          <p class="kicker">The product</p>
+          <p class="quote">FleekFlow helps a supplier <em>finish a wholesale lot in conversation</em>, then keeps that confirmed record for the buyer’s decision and for any later mismatch.</p>
+        `,
+        note: "Read this line slowly. It is the submission line. One product, two moments: before the purchase, and after a mismatch."
+      },
+      {
+        html: `
+          <p class="kicker">One document</p>
+          <h2>Three people read the same record.</h2>
+          <div class="roles">
+            <article class="role lead">
+              <div class="who">Supplier</div>
+              <h3>Says it. Confirms it.</h3>
+              <p>Wassist fills the registration sheet with stated facts only. Confirmation is an explicit act.</p>
+            </article>
+            <article class="role">
+              <div class="who">Buyer</div>
+              <h3>Decides on that version.</h3>
+              <p>Quantity, sizes, declared defects, subtotal before shipping, and every field still unknown.</p>
+            </article>
+            <article class="role">
+              <div class="who">Reviewer</div>
+              <h3>Sees the gap.</h3>
+              <p>Original listing, buyer report, photo checklist, and the public five-day guidance. A person decides.</p>
+            </article>
+          </div>
+        `,
+        note: "Walk left to right. Stress that the buyer page is the outcome of the supplier work, not a second product."
+      },
+      {
+        html: `
+          <p class="kicker">The demo</p>
+          <h2 style="font-size:40px;margin-bottom:8px">CoCreate Hub, one lot.</h2>
+          <div class="beats">
+            <div class="beat"><div class="n">1</div><div><strong>20 women’s blue shirts</strong><span>United Kingdom. Unbranded. £8 each.</span></div></div>
+            <div class="beat"><div class="n">2</div><div><strong>20 stated, 18 counted</strong><span>“Mostly S, M and L. I counted 18, not 20.”</span></div></div>
+            <div class="beat"><div class="n">3</div><div><strong>The supplier chooses</strong><span>“18 is correct. Two pieces have small stains.”</span></div></div>
+            <div class="beat"><div class="n">4</div><div><strong>Confirm record</strong><span>£144 before shipping. Stock is 18.</span></div></div>
+            <div class="beat"><div class="n">5</div><div><strong>The buyer reads it</strong><span>The published fields. Shipping and duties stay unstated.</span></div></div>
+            <div class="beat"><div class="n">6</div><div><strong>Order FLK-DEMO-1842</strong><span>The draft compares the record with the report. It does not decide a refund.</span></div></div>
+          </div>
+        `,
+        note: "Use this slide as the map, then switch to the live app. Say the conflict stays open until the supplier picks one number."
+      },
+      {
+        html: `
+          <p class="kicker">The rule</p>
+          <h2>Only what was said enters the record.</h2>
+          <div class="rules">
+            <div class="rule"><b>Declared, confirmed, or unknown</b><span>Each field carries a status. Silence does not become a fact.</span></div>
+            <div class="rule"><b>Grade stays open</b><span>FleekFlow does not assign a grade or mark the supplier as verified.</span></div>
+            <div class="rule"><b>A photo shows a detail</b><span>It does not prove identity, authenticity, or the condition of every piece.</span></div>
+            <div class="rule"><b>The SKU waits for “I confirm”</b><span>Stock equals the confirmed quantity. Shipping and duties stay unknown until stated.</span></div>
+          </div>
+        `,
+        note: "This is the trust slide. Judges should hear the limits. A web search is labeled “found on the web” and never fills the lot."
+      },
+      {
+        html: `
+          <p class="kicker">Close</p>
+          <h1 style="font-size:56px;max-width:18ch">A clearer lot at the source. The same record when the box differs.</h1>
+          <p class="lede">I’ll show the supplier finish the lot, the buyer read it, and the reviewer receive that document.</p>
+          <div class="close-row">
+            <span class="pill on">Conversation</span>
+            <span class="pill">Confirmed record</span>
+            <span class="pill">Buyer decision</span>
+            <span class="pill">Human review</span>
+          </div>
+        `,
+        note: "End on the demo handoff. If there is time for one question, answer inside the rule: we record what was said, and a person decides the case. About 3 minutes total before the live demo."
+      }
+    ];
+
+    const deck = document.getElementById("deck");
+    const notes = document.getElementById("notes");
+    let index = 0;
+
+    function render() {
+      deck.innerHTML = slides.map((slide, i) => `
+        <section class="slide ${i === index ? "active" : ""}">
+          ${slide.html}
+          <footer class="bar">
+            <span>FleekFlow</span>
+            <span class="dots">${slides.map((_, d) => `<i class="${d === index ? "on" : ""}"></i>`).join("")}</span>
+            <span>${index + 1} / ${slides.length}</span>
+          </footer>
+        </section>
+      `).join("");
+      notes.innerHTML = `<b>Say · </b>${slides[index].note}`;
+    }
+
+    function go(next) {
+      index = Math.max(0, Math.min(slides.length - 1, next));
+      render();
+    }
+
+    window.goTo = go;
+
+    document.addEventListener("click", (event) => {
+      if (event.target.closest(".notes")) return;
+      const x = event.clientX / window.innerWidth;
+      if (x > 0.72) go(index + 1);
+      else if (x < 0.28) go(index - 1);
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowRight" || event.key === " " || event.key === "PageDown") {
+        event.preventDefault();
+        go(index + 1);
+      }
+      if (event.key === "ArrowLeft" || event.key === "PageUp") {
+        event.preventDefault();
+        go(index - 1);
+      }
+      if (event.key === "n" || event.key === "N") {
+        document.body.classList.toggle("show-notes");
+      }
+      if (event.key === "Home") go(0);
+      if (event.key === "End") go(slides.length - 1);
+    });
+
+    render();
+  </script>
+</body>
+</html>
