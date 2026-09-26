@@ -10,6 +10,8 @@ export interface Workspace {
   lot: LotRecord;
   messages: ChatMessage[];
   listings: PublishedLot[];
+  /** Latest confirmed lot. A newer empty draft does not hide it. */
+  purchasable: LotRecord | null;
 }
 
 function admin() {
@@ -232,7 +234,8 @@ export async function loadWorkspace(sessionId: string): Promise<Workspace> {
     text: message.body,
   }));
 
-  return { lot, messages, listings };
+  const confirmed = (rows ?? []).find((row) => (row.record as LotRecord | null)?.published);
+  return { lot, messages, listings, purchasable: confirmed ? (confirmed.record as LotRecord) : null };
 }
 
 export async function resetWorkspace(sessionId: string): Promise<Workspace> {

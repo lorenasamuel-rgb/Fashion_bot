@@ -12,7 +12,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) for the desk demo. On a phone, open [http://localhost:3000/phone](http://localhost:3000/phone).
+Open [http://localhost:3000](http://localhost:3000) for the supplier desk. On a phone, open [http://localhost:3000/phone](http://localhost:3000/phone). After the supplier confirms a lot, open [http://localhost:3000/buy](http://localhost:3000/buy). The buyer can place that order and report a mismatch against the same record. The order exists only after confirmation, and stock is the confirmed quantity.
 
 Fill `.env.local` from `.env.example`:
 

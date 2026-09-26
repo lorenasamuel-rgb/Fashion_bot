@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { applyVendorMessage, confirmRecord, isReady, subtotal } from "./agent";
+import { applyVendorMessage, confirmRecord, isReady, orderNumberFor, placeOrder, reviseRecord, subtotal } from "./agent";
 import { buildClaim } from "./claim";
 import {
   CONFIRM_COUNT_AND_DEFECTS_LINE,
@@ -44,6 +44,25 @@ assert.ok(confirmed.published);
 assert.equal(confirmed.published?.quantity, 18);
 assert.equal(confirmed.shopName.status, "confirmed");
 assert.equal(confirmed.shipping.status, "unknown");
+assert.equal(confirmed.order?.number, DEMO_ORDER_NUMBER);
+assert.equal(confirmed.order?.stock, 18);
+assert.equal(confirmed.order?.unitPrice, 8);
+assert.equal(confirmed.order?.placed, false);
+assert.equal(orderNumberFor("North Lot", "11111111-1111-4111-8111-111111111111"), "FLK-111111");
+
+const refused = placeOrder(resolved.lot);
+assert.equal(refused.lot.order, null);
+assert.match(refused.error ?? "", /not purchasable/);
+
+const placed = placeOrder(confirmed);
+assert.equal(placed.error, undefined);
+assert.equal(placed.lot.order?.placed, true);
+assert.equal(placed.lot.order?.stock, 18);
+assert.equal(placed.lot.published?.quantity, 18);
+
+const revised = reviseRecord(placed.lot);
+assert.equal(revised.published, null);
+assert.equal(revised.order, null);
 
 const claim = buildClaim(confirmed.published!, {
   orderNumber: DEMO_ORDER_NUMBER,

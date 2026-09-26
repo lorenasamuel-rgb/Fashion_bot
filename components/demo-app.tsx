@@ -81,6 +81,9 @@ export function DemoApp() {
               <button type="button" onClick={() => setMode("review")} className={mode === "review" ? "text-ink" : "text-secondary"}>
                 Review
               </button>
+              <a href="/buy" className="text-secondary">
+                Buyer page
+              </a>
               <button type="button" onClick={reset} className="text-secondary">
                 Reset
               </button>

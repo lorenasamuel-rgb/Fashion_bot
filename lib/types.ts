@@ -39,6 +39,17 @@ export interface BuyerReport {
   reviewRequested?: boolean;
 }
 
+/** Created only when the supplier confirms the lot. Stock is the confirmed quantity. */
+export interface LotOrder {
+  number: string;
+  sku: string;
+  stock: number;
+  unitPrice: number;
+  currency: "GBP";
+  placed: boolean;
+  placedAt: string | null;
+}
+
 export interface LotRecord {
   productId: string;
   shopName: Field<string>;
@@ -62,6 +73,7 @@ export interface LotRecord {
   quantityConflict: QuantityConflict | null;
   published: PublishedLot | null;
   buyerReport: BuyerReport | null;
+  order: LotOrder | null;
 }
 
 export interface ChatMessage {
@@ -98,6 +110,7 @@ export function createEmptyLot(productId = crypto.randomUUID()): LotRecord {
     quantityConflict: null,
     published: null,
     buyerReport: null,
+    order: null,
   };
 }
 

@@ -526,7 +526,12 @@ function StoreSheet({
       <button type="button" onClick={onBuyer} className="h-12 w-full rounded-xl bg-fleek text-[17px] font-semibold tracking-[-0.02em] text-ink">
         Publish your store on Fleek
       </button>
-      <p className="text-[13px] leading-5 text-secondary">The buyer reads this store here. This demonstration does not send it to the live Fleek app.</p>
+      <p className="text-[13px] leading-5 text-secondary">
+        The buyer reads this store on the buyer page. This demonstration does not send it to the live Fleek app.{" "}
+        <a href="/buy" className="font-semibold text-ink">
+          Open the buyer page
+        </a>
+      </p>
       <button type="button" onClick={onRevise} className="h-11 w-full text-[15px] font-medium text-secondary">
         Revise this product
       </button>

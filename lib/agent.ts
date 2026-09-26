@@ -1,10 +1,13 @@
 import {
   CONFIRM_COUNT_AND_DEFECTS_LINE,
+  DEMO_ORDER_NUMBER,
   OPENING_LINE,
   SIZES_AND_COUNT_LINE,
   type Field,
+  type LotOrder,
   type LotRecord,
   type Provenance,
+  type PublishedLot,
 } from "./types";
 
 export type Lang = "en" | "pt";
@@ -258,6 +261,50 @@ function confirmedReply(lang: Lang): string {
     : "Confirmed version saved. The buyer sees this same record. Anything the supplier did not state stays unknown.";
 }
 
+export function orderNumberFor(shopName: string, productId: string): string {
+  if (/cocreate/i.test(shopName)) return DEMO_ORDER_NUMBER;
+  const tail = productId.replace(/-/g, "").slice(0, 6).toUpperCase();
+  return `FLK-${tail || "LOT"}`;
+}
+
+export function buildOrder(published: PublishedLot, placed = false, placedAt: string | null = null): LotOrder {
+  return {
+    number: orderNumberFor(published.shopName, published.productId),
+    sku: `SKU-${published.productId.replace(/-/g, "").slice(0, 8).toUpperCase()}`,
+    stock: published.quantity,
+    unitPrice: published.unitPrice,
+    currency: "GBP",
+    placed,
+    placedAt,
+  };
+}
+
+/** Attaches the purchasable item when a confirmed lot was saved before orders existed. */
+export function ensureOrder(lot: LotRecord): LotRecord {
+  if (!lot.published) return lot;
+  if (lot.order && lot.order.stock === lot.published.quantity && lot.order.unitPrice === lot.published.unitPrice) {
+    return lot;
+  }
+  return {
+    ...lot,
+    order: buildOrder(lot.published, lot.order?.placed ?? false, lot.order?.placedAt ?? null),
+  };
+}
+
+export function placeOrder(lot: LotRecord): { lot: LotRecord; error?: string } {
+  const ready = ensureOrder(lot);
+  if (!ready.published || !ready.order) {
+    return { lot, error: "This lot is not purchasable until the supplier confirms it." };
+  }
+  if (ready.order.placed) return { lot: ready };
+  return {
+    lot: {
+      ...ready,
+      order: { ...ready.order, placed: true, placedAt: new Date().toISOString() },
+    },
+  };
+}
+
 export function confirmRecord(lot: LotRecord): LotRecord {
   if (!isReady(lot)) return lot;
   const promote = <T,>(field: Field<T>): Field<T> =>
@@ -280,26 +327,29 @@ export function confirmRecord(lot: LotRecord): LotRecord {
     description: promote(lot.description),
   });
 
+  const published: PublishedLot = {
+    productId: promoted.productId,
+    at: new Date().toISOString(),
+    shopName: promoted.shopName.value ?? "",
+    country: promoted.country.value ?? "",
+    title: promoted.title.value ?? "",
+    description: promoted.description.value ?? "",
+    category: promoted.category.value ?? "",
+    audience: promoted.audience.value ?? "",
+    color: promoted.color.value ?? "",
+    brand: promoted.brand.value ?? "Not stated",
+    quantity: promoted.quantity.value ?? 0,
+    unitPrice: promoted.unitPrice.value ?? 0,
+    currency: "GBP",
+    sizes: promoted.sizes.value ?? "",
+    defects: promoted.defects.value ?? "",
+    photos: promoted.photos,
+  };
+
   return {
     ...promoted,
-    published: {
-      productId: promoted.productId,
-      at: new Date().toISOString(),
-      shopName: promoted.shopName.value ?? "",
-      country: promoted.country.value ?? "",
-      title: promoted.title.value ?? "",
-      description: promoted.description.value ?? "",
-      category: promoted.category.value ?? "",
-      audience: promoted.audience.value ?? "",
-      color: promoted.color.value ?? "",
-      brand: promoted.brand.value ?? "Not stated",
-      quantity: promoted.quantity.value ?? 0,
-      unitPrice: promoted.unitPrice.value ?? 0,
-      currency: "GBP",
-      sizes: promoted.sizes.value ?? "",
-      defects: promoted.defects.value ?? "",
-      photos: promoted.photos,
-    },
+    published,
+    order: buildOrder(published),
   };
 }
 
@@ -310,6 +360,7 @@ export function reviseRecord(lot: LotRecord): LotRecord {
   return {
     ...lot,
     published: null,
+    order: null,
     shopName: demote(lot.shopName),
     country: demote(lot.country),
     title: demote(lot.title),
