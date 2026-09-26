@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { openingAgentMessage } from "./agent";
+import { addPhoto, applyVendorMessage, openingAgentMessage } from "./agent";
 import { supabaseAdmin } from "./supabase-admin";
 import { createEmptyLot, type ChatMessage, type LotRecord, type PublishedLot } from "./types";
 
@@ -38,6 +38,33 @@ function fieldStatus(lot: LotRecord) {
   };
 }
 
+export async function sessionForPhone(phone: string): Promise<string> {
+  const digits = phone.replace(/\D/g, "");
+  if (!digits) throw new Error("Missing supplier phone");
+  const db = admin();
+  const { data, error } = await db.from("sessions").select("id").eq("phone", digits).maybeSingle();
+  if (error) throw error;
+  if (data) return data.id;
+
+  const id = crypto.randomUUID();
+  const { error: insertError } = await db.from("sessions").insert({ id, role: "supplier", phone: digits });
+  if (!insertError) return id;
+  const { data: existing, error: againError } = await db.from("sessions").select("id").eq("phone", digits).maybeSingle();
+  if (againError) throw againError;
+  if (existing) return existing.id;
+  throw insertError;
+}
+
+function writeSessionCookie(jar: Awaited<ReturnType<typeof cookies>>, id: string) {
+  jar.set(SESSION_COOKIE, id, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 30,
+  });
+}
+
 export async function ensureSession(): Promise<string> {
   const jar = await cookies();
   const current = jar.get(SESSION_COOKIE)?.value;
@@ -51,14 +78,23 @@ export async function ensureSession(): Promise<string> {
   const id = crypto.randomUUID();
   const { error } = await db.from("sessions").insert({ id, role: "supplier" });
   if (error) throw error;
-  jar.set(SESSION_COOKIE, id, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 30,
-  });
+  writeSessionCookie(jar, id);
   return id;
+}
+
+export async function openWhatsappSession(): Promise<string> {
+  const db = admin();
+  const { data, error } = await db
+    .from("sessions")
+    .select("id")
+    .not("phone", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data?.id) return ensureSession();
+  writeSessionCookie(await cookies(), data.id);
+  return data.id;
 }
 
 export async function saveLot(sessionId: string, lot: LotRecord) {
@@ -95,6 +131,12 @@ export async function saveLot(sessionId: string, lot: LotRecord) {
   if (error) throw error;
 }
 
+export async function hasMessage(id: string): Promise<boolean> {
+  const { data, error } = await admin().from("messages").select("id").eq("id", id).maybeSingle();
+  if (error) throw error;
+  return Boolean(data);
+}
+
 export async function saveMessages(sessionId: string, lotId: string, messages: ChatMessage[]) {
   if (messages.length === 0) return;
   const db = admin();
@@ -109,6 +151,49 @@ export async function saveMessages(sessionId: string, lotId: string, messages: C
     { onConflict: "id" },
   );
   if (error) throw error;
+}
+
+export async function syncListingFromSupplierMessages(sessionId: string): Promise<void> {
+  const db = admin();
+  const { data: rows, error } = await db
+    .from("lots")
+    .select("record, published_at")
+    .eq("session_id", sessionId)
+    .order("updated_at", { ascending: false })
+    .limit(1);
+  if (error) throw error;
+  const row = rows?.[0];
+  if (!row || row.published_at) return;
+  const current = row.record as LotRecord;
+
+  const { data: stored, error: messageError } = await db
+    .from("messages")
+    .select("role, body")
+    .eq("session_id", sessionId)
+    .order("created_at", { ascending: true });
+  if (messageError) throw messageError;
+
+  let lot = createEmptyLot(current.productId);
+  for (const message of stored ?? []) {
+    if (message.role !== "vendor") continue;
+    const text = message.body?.trim() ?? "";
+    if (!text) continue;
+    if (text === "Photo of the shirts attached.") {
+      lot = addPhoto(lot).lot;
+      continue;
+    }
+    lot = applyVendorMessage(lot, text).lot;
+  }
+  lot = { ...lot, buyerReport: current.buyerReport, photos: Math.max(lot.photos, current.photos) };
+  const same =
+    lot.shopName.value === current.shopName.value &&
+    lot.quantity.value === current.quantity.value &&
+    lot.unitPrice.value === current.unitPrice.value &&
+    lot.brand.value === current.brand.value &&
+    lot.category.value === current.category.value &&
+    lot.title.value === current.title.value;
+  if (same) return;
+  await saveLot(sessionId, lot);
 }
 
 export async function loadWorkspace(sessionId: string): Promise<Workspace> {

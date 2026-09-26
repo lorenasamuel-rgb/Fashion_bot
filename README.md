@@ -12,7 +12,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000) for the desk demo. On a phone, open [http://localhost:3000/phone](http://localhost:3000/phone).
 
 Fill `.env.local` from `.env.example`:
 

@@ -93,9 +93,9 @@ function extractSizes(text: string): string | null {
 function applyExtractions(lot: LotRecord, text: string): LotRecord {
   let next = { ...lot };
 
-  const shop = text.match(
-    /(?:my shop is|our shop is|the shop is|shop is|loja é(?: a)?|loja e(?: a)?)\s+([^,.\n]+)/i,
-  );
+  const shop =
+    text.match(/(?:my shop is|our shop is|the shop is|shop is|loja é(?: a)?|loja e(?: a)?)\s+([^,.\n]+)/i) ??
+    text.match(/^([A-Za-z][\w'’&.-]*(?:\s+[A-Za-z][\w'’&.-]*){0,4}),\s*(?:the\s+)?(?:uk|u\.k\.|united kingdom|reino unido)\b/i);
   if (shop) next.shopName = fill(next.shopName, shop[1].trim());
 
   if (/\b(?:uk|u\.k\.|united kingdom|reino unido)\b/i.test(text)) {
@@ -103,15 +103,15 @@ function applyExtractions(lot: LotRecord, text: string): LotRecord {
   }
 
   const shirtCount =
-    text.match(/(\d+)\s+women(?:'s)?\s+blue\s+shirts/i) ??
+    text.match(/(\d+)\s+women(?:'s|s)?\s+(?:blue\s+)?(?:t-)?shirts?/i) ??
     text.match(/(\d+)\s+camisas\s+femininas(?:\s+azuis)?/i) ??
-    text.match(/(\d+)\s+(?:blue\s+)?(?:shirts|camisas)/i) ??
+    text.match(/(\d+)\s+(?:blue\s+)?(?:t-)?shirts?/i) ??
     text.match(/\b(?:tenho|i have)\s+(\d+)\b/i);
   if (shirtCount && next.quantityConflict == null) {
     next.quantity = fill(next.quantity, Number(shirtCount[1]));
   }
 
-  const price = text.match(/£\s*(\d+(?:\.\d{1,2})?)/);
+  const price = text.match(/£\s*(\d+(?:\.\d{1,2})?)/) ?? text.match(/(\d+(?:\.\d{1,2})?)\s*(?:pounds?|gbp)\b/i);
   if (price) next.unitPrice = fill(next.unitPrice, Number(price[1]));
 
   if (/\b(?:unbranded|sem marca|no brand|without a brand)\b/i.test(text)) {
@@ -122,7 +122,7 @@ function applyExtractions(lot: LotRecord, text: string): LotRecord {
   if (/\b(?:women(?:'s)?|femininas?|feminino)\b/i.test(text)) {
     next.audience = fill(next.audience, "Women's");
   }
-  if (/\b(?:shirts|camisas)\b/i.test(text)) next.category = fill(next.category, "Shirts");
+  if (/\b(?:t-shirts?|shirts?|camisas)\b/i.test(text)) next.category = fill(next.category, "Shirts");
 
   const sizes = extractSizes(text);
   if (sizes) next.sizes = fill(next.sizes, sizes);
@@ -328,9 +328,13 @@ export function reviseRecord(lot: LotRecord): LotRecord {
 
 export function suggestedLine(lot: LotRecord): string | null {
   if (lot.published) return null;
-  if (!lot.shopName.value) return OPENING_LINE;
-  if (!lot.sizes.value) return SIZES_AND_COUNT_LINE;
-  if (lot.quantityConflict || !lot.defects.value) return CONFIRM_COUNT_AND_DEFECTS_LINE;
+  if (!lot.shopName.value || !lot.country.value) return "My shop is CoCreate Hub, in the UK.";
+  if (!lot.quantity.value || !lot.unitPrice.value || !lot.category.value) {
+    return "I have 20 women's blue shirts, unbranded, at £8 each.";
+  }
+  if (!lot.sizes.value) return "The sizes are S, M and L.";
+  if (lot.quantityConflict) return "18 is correct.";
+  if (!lot.defects.value) return "Two pieces have small stains.";
   if (isReady(lot)) return "Confirm record";
   return null;
 }

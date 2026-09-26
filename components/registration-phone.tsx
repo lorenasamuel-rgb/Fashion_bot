@@ -122,6 +122,7 @@ export function RegistrationPhone({
   onCopy,
   onMode,
   onGrade,
+  frame = "device",
 }: {
   lot: LotRecord;
   listings: PublishedLot[];
@@ -138,7 +139,9 @@ export function RegistrationPhone({
   onCopy: () => void;
   onMode: (mode: "upload" | "buyer" | "review") => void;
   onGrade: (grade: string) => void;
+  frame?: "device" | "screen";
 }) {
+  const screen = frame === "screen";
   const [step, setStep] = useState<Step>(0);
   const jumped = useRef(false);
   const title = productTitle(lot);
@@ -164,15 +167,23 @@ export function RegistrationPhone({
   }
 
   return (
-    <div className="mx-auto w-full max-w-[402px]">
-      <div className="overflow-hidden rounded-[36px] border border-black/10 bg-card shadow-[0_22px_50px_rgba(29,29,31,0.16)] sm:rounded-[44px] sm:border-[10px] sm:border-[#1c1c1e]">
-        <div className="hidden h-[34px] items-end justify-between px-5 pb-1 text-[12px] font-semibold tracking-[-0.01em] sm:flex">
-          <span>9:41</span>
-          <span className="h-[22px] w-[92px] rounded-full bg-ink" />
-          <span className="w-10 text-right">5G</span>
-        </div>
+    <div className={screen ? "flex h-full min-h-0 w-full flex-col" : "mx-auto w-full max-w-[402px]"}>
+      <div
+        className={
+          screen
+            ? "flex min-h-0 flex-1 flex-col overflow-hidden bg-card"
+            : "overflow-hidden rounded-[36px] border border-black/10 bg-card shadow-[0_22px_50px_rgba(29,29,31,0.16)] sm:rounded-[44px] sm:border-[10px] sm:border-[#1c1c1e]"
+        }
+      >
+        {screen ? null : (
+          <div className="hidden h-[34px] items-end justify-between px-5 pb-1 text-[12px] font-semibold tracking-[-0.01em] sm:flex">
+            <span>9:41</span>
+            <span className="h-[22px] w-[92px] rounded-full bg-ink" />
+            <span className="w-10 text-right">5G</span>
+          </div>
+        )}
 
-        <div className="flex h-[62dvh] flex-col sm:h-[min(760px,calc(100dvh-8.5rem))]">
+        <div className={screen ? "flex min-h-0 flex-1 flex-col" : "flex h-[62dvh] flex-col sm:h-[min(760px,calc(100dvh-8.5rem))]"}>
           {mode === "upload" && !showStore ? (
             <header className="flex items-center justify-between border-b border-line/80 px-4 py-3">
               <button type="button" className="grid h-9 w-9 place-items-center rounded-full text-ink" aria-label="Close upload" onClick={() => setStep(0)}>
@@ -604,8 +615,8 @@ function ReviewSheet({
           <label className="flex items-center gap-2 text-[15px]">
             <input
               type="checkbox"
-              checked={lot.buyerReport.receivedWithinFiveDays}
-              onChange={(event) => onUpdate({ receivedWithinFiveDays: event.target.checked })}
+              checked={lot.buyerReport.windowStated === false ? false : lot.buyerReport.receivedWithinFiveDays}
+              onChange={(event) => onUpdate({ receivedWithinFiveDays: event.target.checked, windowStated: true })}
             />
             Reported within five days
           </label>
@@ -629,7 +640,11 @@ function ReviewSheet({
           ))}
         </ul>
       </div>
-      <p className="text-[13px] leading-5 text-secondary">{policyNote(lot.buyerReport?.receivedWithinFiveDays ?? true)}</p>
+      <p className="text-[13px] leading-5 text-secondary">
+        {lot.buyerReport?.windowStated === false
+          ? "The buyer has not said whether contact is inside five days. A reviewer checks that. This draft does not decide a refund."
+          : policyNote(lot.buyerReport?.receivedWithinFiveDays ?? true)}
+      </p>
       {claim ? (
         <div>
           <div className="mb-2 flex items-center justify-between">

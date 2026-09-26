@@ -32,8 +32,11 @@ export interface PublishedLot {
 export interface BuyerReport {
   orderNumber: string;
   receivedWithinFiveDays: boolean;
+  /** False until the client says whether contact is inside five days. */
+  windowStated?: boolean;
   issues: string;
   photoCount: number;
+  reviewRequested?: boolean;
 }
 
 export interface LotRecord {
@@ -63,7 +66,7 @@ export interface LotRecord {
 
 export interface ChatMessage {
   id: string;
-  role: "vendor" | "agent";
+  role: "vendor" | "agent" | "client";
   text: string;
 }
 

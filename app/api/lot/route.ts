@@ -1,12 +1,26 @@
-import { ensureSession, loadWorkspace, resetWorkspace, saveLot, saveMessages } from "@/lib/store";
+import { moveSupportMessages } from "@/lib/complaints";
+import {
+  ensureSession,
+  loadWorkspace,
+  openWhatsappSession,
+  resetWorkspace,
+  saveLot,
+  saveMessages,
+  syncListingFromSupplierMessages,
+} from "@/lib/store";
 import type { ChatMessage, LotRecord } from "@/lib/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const sessionId = await ensureSession();
+    const channel = new URL(request.url).searchParams.get("channel");
+    const sessionId = channel === "whatsapp" ? await openWhatsappSession() : await ensureSession();
+    if (channel === "whatsapp") {
+      await moveSupportMessages(sessionId);
+      await syncListingFromSupplierMessages(sessionId);
+    }
     const workspace = await loadWorkspace(sessionId);
     return Response.json(workspace);
   } catch (error) {

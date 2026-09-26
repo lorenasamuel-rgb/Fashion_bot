@@ -11,6 +11,11 @@ function money(amount: number): string {
   return `£${amount % 1 === 0 ? amount.toFixed(0) : amount.toFixed(2)}`;
 }
 
+function windowLabel(report: BuyerReport): string {
+  if (report.windowStated === false) return "Not stated";
+  return report.receivedWithinFiveDays ? "Yes" : "No";
+}
+
 export function policyNote(receivedWithinFiveDays: boolean): string {
   const base =
     "Fleek's public guidance asks the buyer to contact Fleek within five days of receipt, with the order number, a description of the problem, and photos or videos when they apply. Partial returns depend on the supplier's agreement.";
@@ -26,7 +31,7 @@ export function buildClaim(published: PublishedLot, report: BuyerReport): string
     "Request for review — demonstration scenario",
     "",
     `Order: ${report.orderNumber || DEMO_ORDER_NUMBER}`,
-    `Received within five days of delivery: ${report.receivedWithinFiveDays ? "Yes" : "No"}`,
+    `Received within five days of delivery: ${windowLabel(report)}`,
     "",
     "Original listing (confirmed record)",
     `Shop: ${published.shopName}, ${published.country}`,
@@ -52,7 +57,9 @@ export function buildClaim(published: PublishedLot, report: BuyerReport): string
     `The buyer reports: ${report.issues.trim() || "no difference described yet."}`,
     "",
     "Policy note",
-    policyNote(report.receivedWithinFiveDays),
+    report.windowStated === false
+      ? "The buyer has not said whether contact is inside five days of receipt. A reviewer needs to check that. This draft does not decide whether a refund is due."
+      : policyNote(report.receivedWithinFiveDays),
     "Prepared for a person to review.",
   ].join("\n");
 }

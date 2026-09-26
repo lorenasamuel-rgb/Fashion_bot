@@ -65,4 +65,17 @@ assert.equal(portuguese.lot.shopName.value, "CoCreate Hub");
 assert.equal(portuguese.lot.quantity.value, 20);
 assert.match(portuguese.reply, /tamanhos/i);
 
+const spoken = applyVendorMessage(
+  createEmptyLot(),
+  "I created a hobby in the UK, 20 women's blue t-shirts and branded it £80.",
+);
+const corrected = applyVendorMessage(spoken.lot, "COCreate Hub, UK, 20 women's blue shirt unbranded 8 pounds");
+assert.equal(corrected.lot.shopName.value, "COCreate Hub");
+assert.equal(corrected.lot.country.value, "United Kingdom");
+assert.equal(corrected.lot.quantity.value, 20);
+assert.equal(corrected.lot.unitPrice.value, 8);
+assert.equal(corrected.lot.brand.value, "Unbranded");
+assert.equal(corrected.lot.category.value, "Shirts");
+assert.equal(corrected.lot.color.value, "Blue");
+
 console.log("agent checks passed");

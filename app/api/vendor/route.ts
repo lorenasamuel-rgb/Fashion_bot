@@ -1,6 +1,9 @@
 import { applyVendorMessage } from "@/lib/agent";
+import { receiveComplaintEmail } from "@/lib/complaints";
 import { replyWithGrokBot } from "@/lib/grok";
+import { isClientComplaint } from "@/lib/support";
 import { ensureSession, saveLot, saveMessages } from "@/lib/store";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import type { LotRecord } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -17,6 +20,25 @@ export async function POST(request: Request) {
 
   if (!body.lot || typeof body.text !== "string" || !body.text.trim()) {
     return Response.json({ error: "Missing lot or text" }, { status: 400 });
+  }
+
+  if (isClientComplaint(body.text)) {
+    try {
+      const sessionId = await ensureSession();
+      const db = supabaseAdmin();
+      const phone = db
+        ? (await db.from("sessions").select("phone").eq("id", sessionId).maybeSingle()).data?.phone
+        : null;
+      const complaint = await receiveComplaintEmail({
+        email: phone ? `+${phone}` : "client@fleekflow.app",
+        subject: "Client complaint",
+        text: body.text.trim(),
+      });
+      return Response.json({ channel: "support", complaint, stored: true });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not open the complaint";
+      return Response.json({ error: message }, { status: 500 });
+    }
   }
 
   let result: { lot: LotRecord; reply: string };
