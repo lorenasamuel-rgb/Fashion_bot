@@ -5,7 +5,7 @@ import { IconAudience, IconBack, IconChevron, IconClose, IconHome, IconShirt, Ic
 import { PHOTO_CHECKLIST, policyNote } from "@/lib/claim";
 import { DEMO_ORDER_NUMBER, type BuyerReport, type LotRecord, type PublishedLot } from "@/lib/types";
 
-type Step = 0 | 1 | 2 | 3;
+export type Step = 0 | 1 | 2 | 3;
 
 const GRADES = ["Grade A", "Grade A/B", "Grade B", "Grade B/C", "Grade C", "Grade A/B/C"] as const;
 const AUDIENCES = [
@@ -123,6 +123,7 @@ export function RegistrationPhone({
   onMode,
   onGrade,
   frame = "device",
+  step: pinnedStep,
 }: {
   lot: LotRecord;
   listings: PublishedLot[];
@@ -140,9 +141,12 @@ export function RegistrationPhone({
   onMode: (mode: "upload" | "buyer" | "review") => void;
   onGrade: (grade: string) => void;
   frame?: "device" | "screen";
+  /** Holds the sheet on one page. The guided demo sets it; the live desk leaves it unset. */
+  step?: Step;
 }) {
   const screen = frame === "screen";
-  const [step, setStep] = useState<Step>(0);
+  const [ownStep, setStep] = useState<Step>(0);
+  const step = pinnedStep ?? ownStep;
   const jumped = useRef(false);
   const title = productTitle(lot);
   const audience = selectedAudience(lot);
@@ -151,12 +155,13 @@ export function RegistrationPhone({
   const showStore = published && mode === "upload";
 
   useEffect(() => {
+    if (pinnedStep !== undefined) return;
     if (!lot.shopName.value) jumped.current = false;
     if (ready && !published && !jumped.current) {
       jumped.current = true;
       setStep(3);
     }
-  }, [ready, published, lot.shopName.value]);
+  }, [ready, published, lot.shopName.value, pinnedStep]);
 
   function next() {
     if (step < 3) {
