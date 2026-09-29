@@ -137,3 +137,19 @@ The app is a Next.js project. Vercel builds it with `npm run build` and deploys 
 Set the three variables above for Production and Preview before the first deploy. Do not commit `.env.local`.
 
 Production session cookies are `Secure` and `HttpOnly`. The supplier route allows up to 60 seconds so a Grok reply can finish.
+
+## Video (Remotion)
+
+`video/` is a standalone [Remotion](https://www.remotion.dev) project based on
+[remotion-dev/template-tiktok](https://github.com/remotion-dev/template-tiktok)
+for rendering TikTok-style captioned videos. It has its own dependencies:
+
+```bash
+cd video
+npm install
+npm run dev              # Remotion Studio preview
+npm run create-subtitles # caption videos in video/public with Whisper.cpp
+npx remotion render      # render to video/out/
+```
+
+See `video/README.md` for details.
